@@ -57,8 +57,9 @@ class User extends Authenticatable
      */
     public function rooms(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Room::class, 'room_user')->withTimestamps();
+        return $this->belongsToMany(Room::class, 'room_user')->withTimestamps()->withPivot('from','to','id');
     }
+
 
 
 }

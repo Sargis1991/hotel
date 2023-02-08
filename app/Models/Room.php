@@ -9,10 +9,11 @@ class Room extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['number', 'status'];
+    protected $fillable = ['number', 'reserved_days'];
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'room_user')->withPivot('day');
+        return $this->belongsToMany(User::class, 'room_user')->withPivot('from','to');
     }
+
 }

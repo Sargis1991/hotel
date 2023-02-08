@@ -18,9 +18,15 @@
                 </div>
             @endif
         </div>
-        @if ($errors->has('date'))
+        @if ($errors->has('from'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>{{$errors->first('date')}}</strong>
+                <strong>{{$errors->first('from')}}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if ($errors->has('to'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>{{$errors->first('to')}}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
@@ -51,6 +57,39 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        My reservations <button id="edit" class="btn btn-warning float-end">Edit</button>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            @forelse(auth()->user()->rooms()->get() as $reserve )
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <form class="formBox" method="POST" action="{{route('change',$reserve->pivot->id)}}">
+                                            @csrf
+                                            @method('PUT')
+                                            Room Name {{$reserve->number}}
+                                            <div>
+                                                <input name="from" class="datepicker" value=" {{  \Carbon\Carbon::parse($reserve->pivot->from)->format('m/d/Y')}}"  disabled>
+                                                <input name="to" class="datepicker" value=" {{  \Carbon\Carbon::parse($reserve->pivot->to)->format('m/d/Y')}}"  disabled>
+                                            </div>
+                                            <div class="mt-2">
+                                                <button type="submit" class=" btn btn-primary" disabled>Change</button>
+                                                <a href="{{route('cancel',$reserve->pivot->id)}}" class="btn btn-danger">Remove</a>
+                                            </div>
+                                        </form>
+
+                                    </li>
+                                @empty
+                                You dont have a reservations yet
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -58,8 +97,13 @@
         $( document ).ready(function() {
             $('.datepicker').datepicker({
                 format: 'mm/dd/yyyy',
-                startDate: new Date()
+                // startDate: new Date()
             });
+
+            $('#edit').click(function (){
+                $('.formBox input').prop( "disabled", false )
+                $('.formBox button').prop( "disabled", false )
+            })
         });
     </script>
 

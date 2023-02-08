@@ -1,31 +1,35 @@
 
-<div class="col-md-3">
+<div class="col-md-3" style="border: 1px solid;padding: 5px">
     <div>
-        @if($room->status === 0)
         <form method="POST" action="{{route('reserve',$room->id)}}">
             @csrf
             <div>
-                <input name="date" class="datepicker" data-date-format="d/m/Y">
+                <input name="from" class="datepicker" data-date-format="d/m/Y" placeholder="from">
+            </div>
+            <div class="mt-2">
+                <input name="to" class="datepicker" data-date-format="d/m/Y" placeholder="to">
             </div>
             <button type="submit"  class="btn btn-warning m-lg-2">Reserve</button>
         </form>
-        @else
-            <form method="POST" action="{{route('change',$room->id)}}">
-                @csrf
-                @method('PUT')
-                <div>
-                    <input name="date" class="datepicker" value=" {{ \Carbon\Carbon::parse($room->user()->first()->pivot->day)->format('m/d/Y')}}" >
-                </div>
-                <button type="submit"  class="btn btn-primary m-lg-2">Change</button>
-            </form>
-        @endif
-    </div>
-    <div class="roomItem {{$room->status === 0 ? 'bg-success' :'bg-danger'}}">
-        @if($room->status === 1)
-            <div> <a href="{{route('cancel',$room->id)}}" class="btn btn-secondary m-lg-2">Cancel</a></div>
-            @endif
 
-        <div class="number">{{$room->number}}</div>
+    </div>
+    <div class="mb-2">
+        Reserved days
+        @forelse($room->user()->get() as $item )
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <div>
+                        From: {{\Carbon\Carbon::parse($item->pivot->from)->format('m/d/Y')}}
+                        To : {{  \Carbon\Carbon::parse($item->pivot->to)->format('m/d/Y')}}
+                    </div>
+                </li>
+        @empty
+            All Days Free
+        @endforelse
+    </div>
+    <div class="roomItem ">
+
+        <div > Room number {{$room->number}}</div>
 
     </div>
 

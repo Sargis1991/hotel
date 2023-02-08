@@ -40,7 +40,7 @@ Route::get('/client', [App\Http\Controllers\HomeController::class, 'client'])->n
 
 Route::post('/reserve/{room}', [App\Http\Controllers\HomeController::class, 'reserve'])->name('reserve');
 
-Route::get('/cancel/{room}', [App\Http\Controllers\HomeController::class, 'cancel'])->name('cancel');
+Route::get('/cancel/{id}', [App\Http\Controllers\HomeController::class, 'cancel'])->name('cancel');
 
-Route::put('/change/{room}', [App\Http\Controllers\HomeController::class, 'change'])->name('change');
+Route::put('/change/{id}', [App\Http\Controllers\HomeController::class, 'change'])->name('change');
 

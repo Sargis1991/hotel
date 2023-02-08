@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Actions\RoomAction;
 use App\Models\Room;
+use App\Models\UserRoom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -43,16 +45,22 @@ class HomeController extends Controller
     /**
      * @throws ValidationException
      */
-    public  function reserve (Room $room): \Illuminate\Http\RedirectResponse
+    public  function reserve (Room $room,RoomAction $roomAction): \Illuminate\Http\RedirectResponse
     {
 
         $this->validateRequest();
 
+        if($roomAction->handler($room->id) > 0) {
+            return back()->with('error','Please change days');
+        }
+
         DB::beginTransaction();
         try{
-            $room->update(['status'=>true]);
 
-            auth()->user()->rooms()->attach($room->id, ['day' =>\Carbon\Carbon::parse(\request('date'))->timestamp ]);
+            auth()->user()->rooms()->attach($room->id, [
+                'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp,
+                 'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
+            ]);
 
             DB::commit();
 
@@ -73,7 +81,6 @@ class HomeController extends Controller
     {
         DB::beginTransaction();
         try{
-            $room->update(['status'=>false]);
 
             auth()->user()->rooms()->detach($room->id);
 
@@ -93,11 +100,18 @@ class HomeController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      * @throws ValidationException
      */
-    public function change (Room $room): \Illuminate\Http\RedirectResponse
+    public function change (Room $room,RoomAction $roomAction): \Illuminate\Http\RedirectResponse
     {
         $this->validateRequest();
 
-        auth()->user()->rooms()->updateExistingPivot($room->id,['day' =>\Carbon\Carbon::parse(\request('date'))->timestamp ] );
+        if($roomAction->handler($room->id) > 0) {
+            return back()->with('error','Please change days');
+        }
+
+        auth()->user()->rooms()->updateExistingPivot($room->id,[
+            'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp ,
+            'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
+        ] );
 
         return back()->with('success','Reservation is changed');
 
@@ -110,7 +124,8 @@ class HomeController extends Controller
     private function validateRequest(): void
     {
         Validator::make(\request()->all(), [
-            'date' => 'required|date_format:m/d/Y',
+            'from' => 'required|date_format:m/d/Y',
+            'to' => 'required|date_format:m/d/Y',
         ])->validate();
     }
 }

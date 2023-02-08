@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('number')->unique();
-            $table->boolean('status')->default(false);
+            $table->integer('number')->unique();
             $table->timestamps();
         });
     }

@@ -18,7 +18,6 @@ class RoomFactory extends Factory
     {
         return [
             'number' => fake()->unique()->numberBetween(1,25),
-            'status'=>false
         ];
     }
 }
