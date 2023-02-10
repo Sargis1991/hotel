@@ -68,7 +68,7 @@
                             @forelse(auth()->user()->rooms()->get() as $reserve )
                                 <ul class="list-group">
                                     <li class="list-group-item">
-                                        <form class="formBox" method="POST" action="{{route('change',$reserve->pivot->id)}}">
+                                        <form class="formBox" method="POST" action="{{route('change',['id' =>$reserve->pivot->id ,'room_id'=>$reserve->id])}}">
                                             @csrf
                                             @method('PUT')
                                             Room Name {{$reserve->number}}

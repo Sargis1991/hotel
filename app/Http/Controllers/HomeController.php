@@ -57,12 +57,13 @@ class HomeController extends Controller
         DB::beginTransaction();
         try{
 
-            auth()->user()->rooms()->attach($room->id, [
+           $row =auth()->user()->rooms()->attach($room->id, [
                 'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp,
                  'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
             ]);
 
             DB::commit();
+
 
             return back()->with('success','Reservation is submitted');
         }
@@ -77,12 +78,12 @@ class HomeController extends Controller
      * @param Room $room
      * @return \Illuminate\Http\RedirectResponse
      */
-    public  function cancel (Room $room): \Illuminate\Http\RedirectResponse
+    public  function cancel ($id): \Illuminate\Http\RedirectResponse
     {
         DB::beginTransaction();
         try{
 
-            auth()->user()->rooms()->detach($room->id);
+            UserRoom::findOrFail($id)->delete();
 
             DB::commit();
 
@@ -100,18 +101,18 @@ class HomeController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      * @throws ValidationException
      */
-    public function change (Room $room,RoomAction $roomAction): \Illuminate\Http\RedirectResponse
+    public function change ($id,$room_id,RoomAction $roomAction): \Illuminate\Http\RedirectResponse
     {
         $this->validateRequest();
 
-        if($roomAction->handler($room->id) > 0) {
+        if($roomAction->handler($room_id) > 0) {
             return back()->with('error','Please change days');
         }
 
-        auth()->user()->rooms()->updateExistingPivot($room->id,[
-            'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp ,
+        UserRoom::findOrFail($id)->update([
+            'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp,
             'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
-        ] );
+        ]);
 
         return back()->with('success','Reservation is changed');
 
