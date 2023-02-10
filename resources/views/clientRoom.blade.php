@@ -4,10 +4,10 @@
         <form method="POST" action="{{route('reserve',$room->id)}}">
             @csrf
             <div>
-                <input name="from" class="datepicker" data-date-format="d/m/Y" placeholder="from">
+                <input name="from" class="datepicker" data-date-format="d/m/Y" placeholder="from" >
             </div>
             <div class="mt-2">
-                <input name="to" class="datepicker" data-date-format="d/m/Y" placeholder="to">
+                <input name="to" class="datepicker" data-date-format="d/m/Y" placeholder="to" >
             </div>
             <button type="submit"  class="btn btn-warning m-lg-2">Reserve</button>
         </form>
@@ -34,4 +34,6 @@
     </div>
 
 </div>
+
+
 

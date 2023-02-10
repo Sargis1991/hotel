@@ -44,3 +44,4 @@ Route::get('/cancel/{id}', [App\Http\Controllers\HomeController::class, 'cancel'
 
 Route::put('/change/{id}/room/{room_id}', [App\Http\Controllers\HomeController::class, 'change'])->name('change');
 
+

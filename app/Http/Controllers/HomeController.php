@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Actions\RoomAction;
+use App\Models\ReservedDays;
 use App\Models\Room;
 use App\Models\UserRoom;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -50,24 +51,28 @@ class HomeController extends Controller
 
         $this->validateRequest();
 
-        if($roomAction->handler($room->id) > 0) {
-            return back()->with('error','Please change days');
+        if(gettype($roomAction->handler($room->id))==='string'){
+            return back()->with('error',$roomAction->handler($room->id).'days are reserved');
         }
 
         DB::beginTransaction();
         try{
 
-           $row =auth()->user()->rooms()->attach($room->id, [
+           $row = UserRoom::create([
+                'user_id'=>auth()->user()->id,
+                'room_id'=>$room->id,
                 'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp,
-                 'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
+                'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
             ]);
 
-            DB::commit();
+            ReservedDays::insert($roomAction->handler($room->id,$row->id));
 
+            DB::commit();
 
             return back()->with('success','Reservation is submitted');
         }
         catch(\Exception $exception) {
+
             DB::rollBack();
             return back()->with('error','Something went wrong,please try again');
         }
@@ -82,6 +87,7 @@ class HomeController extends Controller
     {
         DB::beginTransaction();
         try{
+            ReservedDays::where('order_id',$id)->delete();
 
             UserRoom::findOrFail($id)->delete();
 
@@ -105,16 +111,32 @@ class HomeController extends Controller
     {
         $this->validateRequest();
 
-        if($roomAction->handler($room_id) > 0) {
-            return back()->with('error','Please change days');
+        if(gettype($roomAction->handler($room_id))==='string'){
+            return back()->with('error',$roomAction->handler($room_id).'days are reserved');
         }
+
+        DB::beginTransaction();
+        try{
 
         UserRoom::findOrFail($id)->update([
             'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp,
             'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
         ]);
 
-        return back()->with('success','Reservation is changed');
+        ReservedDays::where('order_id',$id)->delete();
+
+        ReservedDays::insert($roomAction->handler($room_id,$id));
+
+            DB::commit();
+
+            return back()->with('success','Reservation is changed');
+        }
+        catch(\Exception $exception) {
+            DB::rollBack();
+            return back()->with('error','Something went wrong,please try again');
+        }
+
+
 
     }
 
@@ -125,8 +147,8 @@ class HomeController extends Controller
     private function validateRequest(): void
     {
         Validator::make(\request()->all(), [
-            'from' => 'required|date_format:m/d/Y',
-            'to' => 'required|date_format:m/d/Y',
+            'from' => 'required|date_format:m/d/Y|after:'.Carbon::now()->format('m/d/Y'),
+            'to' => 'required|date_format:m/d/Y|after:'.Carbon::now()->format('m/d/Y'),
         ])->validate();
     }
 }
