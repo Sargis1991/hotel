@@ -22,13 +22,12 @@ class RoomAction
     /**
      * @param int $room_id
      * @param int|null $order_id
-     * @return array|mixed
+     * @return string|array|bool
      */
 
-    public function handler ( int $room_id,int $order_id=null): mixed
+    public function handler ( int $room_id,int $order_id=null): string|array|bool
     {
-
-        if($this->checker($room_id)) return $this->checker($room_id);
+       if($this->checker($room_id)) return $this->checker($room_id);
 
         return $this->buildQuery($order_id,$room_id);
     }
@@ -59,8 +58,7 @@ class RoomAction
     private function checker  (int $room_id): string|bool
     {
 
-      $query =ReservedDays::select('day')->where('room_id',$room_id)
-            ->whereBetween('day', [$this->from, $this->to]);
+      $query =ReservedDays::reserved($room_id,$this->from,$this->to);
 
       if($query->count()>0)
       {
@@ -73,6 +71,7 @@ class RoomAction
 
       return false;
     }
+
 
 
 

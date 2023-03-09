@@ -97,6 +97,8 @@
         $( document ).ready(function() {
             $('.datepicker').datepicker({
                 format: 'mm/dd/yyyy',
+            }).on('changeMonth',function (e){
+                console.log(e.dates);
             });
 
             $('#edit').click(function (){

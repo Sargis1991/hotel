@@ -111,19 +111,22 @@ class HomeController extends Controller
     {
         $this->validateRequest();
 
-        if(gettype($roomAction->handler($room_id))==='string'){
-            return back()->with('error',$roomAction->handler($room_id).'days are reserved');
-        }
+
 
         DB::beginTransaction();
         try{
+            ReservedDays::where('order_id',$id)->delete();
 
-        UserRoom::findOrFail($id)->update([
+        if(gettype($roomAction->handler($room_id,$id))==='string'){
+            DB::rollBack();
+            return back()->with('error',$roomAction->handler($room_id).'days are reserved');
+        }
+
+
+            UserRoom::findOrFail($id)->update([
             'from' =>\Carbon\Carbon::parse(\request('from'))->timestamp,
             'to' =>\Carbon\Carbon::parse(\request('to'))->timestamp
         ]);
-
-        ReservedDays::where('order_id',$id)->delete();
 
         ReservedDays::insert($roomAction->handler($room_id,$id));
 
@@ -148,7 +151,7 @@ class HomeController extends Controller
     {
         Validator::make(\request()->all(), [
             'from' => 'required|date_format:m/d/Y|after:'.Carbon::now()->format('m/d/Y'),
-            'to' => 'required|date_format:m/d/Y|after:'.Carbon::now()->format('m/d/Y'),
+            'to' => 'required|date_format:m/d/Y|after:'.Carbon::parse(request('from'))->format('m/d/Y'),
         ])->validate();
     }
 }
